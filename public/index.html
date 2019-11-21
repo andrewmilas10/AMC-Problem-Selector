@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+        var toggleSolutions =function(el, btn, toScroll, shouldScroll){  
+            if (el.style.display === 'block') {
+                el.style.display = 'none'
+                btn.innerHTML = "Show Solutions"
+                if (shouldScroll) {
+                    toScroll.scrollIntoView();
+                }
+            } else {
+                el.style.display = 'block'
+                btn.innerHTML = "Hide Solutions"
+            }
+        };
+    </script>
+</head>
+<body>
+    <header id="headingContainer" class="problem">
+        <h1 id="title">AMC Problem Selector</h1>
+        <hr>
+        <p>Select the year, version, and any key words that you want</p>
+
+        <form action="/AMC">
+        <span class="inlineSpan">Year: </span>
+        <select id="yearSelect" name="year">
+                <option value="All">All</option>
+                <option value="2019">2019</option>
+                <option value="2018">2018</option>
+                <option value="2017">2017</option>
+                <option value="2016">2016</option>
+                <option value="2015">2015</option>
+                <option value="2014">2014</option>
+                <option value="2013">2013</option>
+                <option value="2012">2012</option>
+                <option value="2011">2011</option>
+                <option value="2010">2010</option>
+                <option value="2009">2009</option>
+                <option value="2008">2008</option>
+                <option value="2007">2007</option>
+                <option value="2006">2006</option>
+                <option value="2005">2005</option>
+                <option value="2004">2004</option>
+                <option value="2003">2003</option>
+                <option value="2002">2002</option>
+        </select>
+        <br><br>
+        <span class="inlineSpan">Version: </span>
+        <select id="versionSelect" name="version">
+            <option value="All">All</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+        </select>
+        <br><br>
+        <span class="inlineSpan">Key Words: </span>
+        <input style = "margin-bottom: 10px" id="keyWordInput" type="text" name="keyWords" value="ALL">
+
+        <hr>
+        <p>Select how to order the problems</p>
+        <select id="orderSelect" name="order">
+            <option value="Year">Year</option>
+            <option value="Problem Number">Problem Number</option>
+        </select>
+        <br><br>
+        <input class = "btn" type="submit">
+
+        
+
+        </form>
+        
+    </header>
+    <div id="problemContainer">
+
+    </div>
+</body>
+</html>
