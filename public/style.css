@@ -3,7 +3,7 @@ body {
     background-color: lightblue;
 }
 
-#title {
+.title {
     /* color: #004d66; */
     font-weight: bold;
     margin-top: 10px;
@@ -16,10 +16,15 @@ img.latexcenter {
     margin: auto;
     padding: 10px;
 }
-#headingContainer {
+
+#headingContainer, #pagesContainer {
     padding: 16px 50px 16px 50px;
     background-color: white;
     font-size: 20px;
+}
+
+#pagesContainer {
+    text-align: center;
 }
 
 #problemContainer {

@@ -28,6 +28,7 @@ http.createServer((req, res) => {
       $('#versionSelect').val(q.query.version)
       $('#keyWordInput').val(q.query.keyWords)
       $('#orderSelect').val(q.query.order)
+      $('#pageSelect').val(q.query.page)
 
       var con = mysql.createConnection({
         host: "localhost",
