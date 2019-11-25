@@ -46,32 +46,39 @@ http.createServer((req, res) => {
         var sql = `SELECT * FROM amc WHERE ${year}${version}${order}`
         con.query(sql, function (err, result) {
           if (err) throw err;
-          // console.log(result)
           var j = 0;
           for (var i = 0; i < result.length; i++) {
-            if ((result[i].problemHTML != null) && (q.query.keyWords == "ALL" || result[i].problemHTML.toLowerCase().includes(q.query.keyWords.toLowerCase()) || result[i].solutions.toLowerCase().includes(q.query.keyWords.toLowerCase()))) {
+            // console.log(`Problem ${j} (AMC ${result[i].year}${result[i].version}, Problem ${result[i].number})`+((result[i].problemHTML != null) && (q.query.keyWords.toLowerCase() == "all" || result[i].problemHTML.toLowerCase().includes(q.query.keyWords.toLowerCase()) || result[i].solutions.toLowerCase().includes(q.query.keyWords.toLowerCase()))))
+            if ((result[i].problemHTML != null) && (q.query.keyWords.toLowerCase() == "all" || result[i].problemHTML.toLowerCase().includes(q.query.keyWords.toLowerCase()) || result[i].solutions.toLowerCase().includes(q.query.keyWords.toLowerCase()))) {
               j++;
-              $("#problemContainer").append(`<div id = 'problem${j}' class = "problem"></div>`)
-              $(`#problem${j}`).append(`<h1>Problem ${j} (AMC ${result[i].year}${result[i].version}, Problem ${result[i].number}): </h1>`)
-              $(`#problem${j}`).append(result[i].problemHTML)
-              // $("#problemContainer").append(`<button type="button" onclick="if (document.getElementById('toggle${j}').style.display === 'block') {document.getElementById('toggle${j}').style.display = 'none'} else {document.getElementById('toggle${j}').style.display = 'block'}" >Click To Show Solutions</button>`)
-              $(`#problem${j}`).append(`<button class = "btn" type="button" id='btn${j}' onclick="toggleSolutions(document.getElementById('toggle${j}'), this, document.getElementById('problem${j}'), false)" >Show Solutions</button>`)
-              var solutionsStr = `<section id = "toggle${j}" style = "display: none">`
-              solutionsStr += `<hr><h2>Problem ${j} Solution: </h2>`
-
-              var solutions = result[i].solutions.split("(@)")
-              // console.log("Solutions: "+solutions)
-              for (k=0; k<solutions.length; k++) {
-                if (k!=0) {
-                  solutionsStr+=`<hr>`
+              if (Math.floor((j-1)/100)+1 == parseInt(q.query.page)) {
+                $("#problemContainer").append(`<div id = 'problem${j}' class = "problem"></div>`)
+                $(`#problem${j}`).append(`<h1>Problem ${j} (AMC ${result[i].year}${result[i].version}, Problem ${result[i].number}): </h1>`)
+                $(`#problem${j}`).append(result[i].problemHTML)
+                // $("#problemContainer").append(`<button type="button" onclick="if (document.getElementById('toggle${j}').style.display === 'block') {document.getElementById('toggle${j}').style.display = 'none'} else {document.getElementById('toggle${j}').style.display = 'block'}" >Click To Show Solutions</button>`)
+                $(`#problem${j}`).append(`<button class = "btn" type="button" id='btn${j}' onclick="toggleSolutions(document.getElementById('toggle${j}'), this, document.getElementById('problem${j}'), false)" >Show Solutions</button>`)
+                var solutionsStr = `<section id = "toggle${j}" style = "display: none">`
+                solutionsStr += `<hr><h2>Problem ${j} Solution: </h2>`
+  
+                var solutions = result[i].solutions.split("(@)")
+                // console.log("Solutions: "+solutions)
+                for (k=0; k<solutions.length; k++) {
+                  if (k!=0) {
+                    solutionsStr+=`<hr>`
+                  }
+                  solutionsStr += `<h4>Solution ${k+1}:</h4>`
+                  solutionsStr += solutions[k]
                 }
-                solutionsStr += `<h4>Solution ${k+1}:</h4>`
-                solutionsStr += solutions[k]
+                solutionsStr += `<button class = "btn" type="button" onclick="toggleSolutions(document.getElementById('toggle${j}'), document.getElementById('btn${j}'), document.getElementById('problem${j}'), true)" >Hide Solutions</button>`
+                solutionsStr += `</section>`
+                $(`#problem${j}`).append(solutionsStr)
               }
-              solutionsStr += `<button class = "btn" type="button" onclick="toggleSolutions(document.getElementById('toggle${j}'), document.getElementById('btn${j}'), document.getElementById('problem${j}'), true)" >Hide Solutions</button>`
-              solutionsStr += `</section>`
-              $(`#problem${j}`).append(solutionsStr)
             }
+          }
+          if (j>100) {
+            $('#pagesContainer').css("display", "block");
+          } else {
+            $('#pagesContainer').css("display", "none");
           }
           res.end($.html())
         })

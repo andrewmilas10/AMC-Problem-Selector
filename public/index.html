@@ -22,13 +22,17 @@
         };
 
         function submitForm() {
-            document.getElementById("f").value = "Johnny Bravo";
+            const urlParams = new URLSearchParams(window.location.search);
+            $('#yearSelect').val(urlParams.get('year').toString())
+            $('#versionSelect').val(urlParams.get('version').toString())
+            $('#keyWordInput').val(urlParams.get('keyWords').toString())
+            $('#orderSelect').val(urlParams.get('order').toString())
             document.getElementById("myForm").submit();
         }
     </script>
 </head>
 <body>
-    <form action="/AMC">
+    <form id = "myForm" action="/AMC">
     <header id="headingContainer" class="problem">
         <h1 class="title">AMC Problem Selector</h1>
         <hr>
@@ -79,10 +83,8 @@
 
         
     </header>
-    </form>
-    
-    <form id="pgForm" action="/AMC"></form>
-    <div id = "pagesContainer" class="problem"> 
+
+    <div id = "pagesContainer" class="problem" style="display: none"> 
         <h2 class="title">Page 1 out of 1</h2>
         <span>Select which page of problems you want: </span>
         <select id="pageSelect" name="page">
