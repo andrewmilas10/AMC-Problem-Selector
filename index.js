@@ -55,6 +55,8 @@ http.createServer((req, res) => {
                 $("#problemContainer").append(`<div id = 'problem${j}' class = "problem"></div>`)
                 $(`#problem${j}`).append(`<h1>Problem ${j} (AMC ${result[i].year}${result[i].version}, Problem ${result[i].number}): </h1>`)
                 $(`#problem${j}`).append(result[i].problemHTML)
+                var url = `https://artofproblemsolving.com/wiki/index.php/${result[i].year}_AMC_12${result[i].version}_Problems/Problem_${result[i].number}`
+                $(`#problem${j}`).append(`<p>Source: <a href="${url}" target="_blank">${url}</a></p>`)
                 // $("#problemContainer").append(`<button type="button" onclick="if (document.getElementById('toggle${j}').style.display === 'block') {document.getElementById('toggle${j}').style.display = 'none'} else {document.getElementById('toggle${j}').style.display = 'block'}" >Click To Show Solutions</button>`)
                 $(`#problem${j}`).append(`<button class = "btn" type="button" id='btn${j}' onclick="toggleSolutions(document.getElementById('toggle${j}'), this, document.getElementById('problem${j}'), false)" >Show Solutions</button>`)
                 var solutionsStr = `<section id = "toggle${j}" style = "display: none">`
@@ -77,6 +79,15 @@ http.createServer((req, res) => {
           }
           if (j>100) {
             $('#pagesContainer').css("display", "block");
+            var numPages = Math.floor((j+99)/100)
+            $('#pageTitle').html(`Page ${q.query.page} out of ${numPages}`)
+            for (var i=2; i<=numPages; i++) {
+              $('#pageSelect').append(`<option value="${i}">${i}</option>`)
+            }
+            
+          //   $('#pageSelect').find('option').each((i,op) => {
+          //     console.log($(op).text())
+          //  })
           } else {
             $('#pagesContainer').css("display", "none");
           }

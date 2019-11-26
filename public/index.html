@@ -21,12 +21,17 @@
             }
         };
 
-        function submitForm() {
+        function submitFormPage() {
             const urlParams = new URLSearchParams(window.location.search);
             $('#yearSelect').val(urlParams.get('year').toString())
             $('#versionSelect').val(urlParams.get('version').toString())
             $('#keyWordInput').val(urlParams.get('keyWords').toString())
             $('#orderSelect').val(urlParams.get('order').toString())
+            document.getElementById("myForm").submit();
+        }
+
+        function submitFormMain() {
+            $('#pageSelect').val("1")
             document.getElementById("myForm").submit();
         }
     </script>
@@ -75,25 +80,25 @@
         <hr>
         <p>Select how to order the problems</p>
         <select id="orderSelect" name="order">
-            <option value="Year">Year</option>
             <option value="Problem Number">Problem Number</option>
+            <option value="Year">Year</option>
         </select>
         <br><br>
-        <input class = "btn" type="submit">
+        <input class = "btn" type="submit" onclick="submitFormMain()">
 
         
     </header>
 
     <div id = "pagesContainer" class="problem" style="display: none"> 
-        <h2 class="title">Page 1 out of 1</h2>
+        <h2 class="title" id="pageTitle">Page 1 out of 1</h2>
         <span>Select which page of problems you want: </span>
         <select id="pageSelect" name="page">
             <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
+            <!-- <option value="2">2</option>
+            <option value="3">3</option> -->
         </select>
         <br><br>
-        <input class = "btn" type="submit" onclick="submitForm()">
+        <input class = "btn" type="submit" onclick="submitFormPage()">
     </div>
     </form>
 
