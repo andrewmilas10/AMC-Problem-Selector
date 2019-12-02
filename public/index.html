@@ -74,6 +74,13 @@
             <option value="B">B</option>
         </select>
         <br><br>
+        <span class="inlineSpan">AMC 10 or 12: </span>
+        <select id="versionSelect" name="version">
+            <option value="All">All</option>
+            <option value="10">10</option>
+            <option value="12">12</option>
+        </select>
+        <br><br>
         <span class="inlineSpan">Key Words: </span>
         <input style = "margin-bottom: 10px" id="keyWordInput" type="text" name="keyWords" value="ALL">
 
@@ -94,8 +101,6 @@
         <span>Select which page of problems you want: </span>
         <select id="pageSelect" name="page">
             <option value="1">1</option>
-            <!-- <option value="2">2</option>
-            <option value="3">3</option> -->
         </select>
         <br><br>
         <input class = "btn" type="submit" onclick="submitFormPage()">

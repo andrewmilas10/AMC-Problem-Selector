@@ -16,7 +16,7 @@ String.prototype.replaceAt=function(index, replacement) {
   return this.substr(0, index) + replacement+ this.substr(index + replacement.length);
 }
 
-// amcDb.addAllAMCSolutions();
+amcDb.addAllAMCs();
 
 http.createServer((req, res) => {
   var q = url.parse(req.url, true);

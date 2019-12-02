@@ -3,8 +3,8 @@ var spawn = require('child_process').spawn
 var mysql = require("mysql");
 
 module.exports = {
-  addToDatabase: function(year, version, callNext = false) {
-    var py = spawn('python', ['getAmcQuestions.py', year, version])
+  addToDatabase: function(year, version, level, callNext = false) {
+    var py = spawn('python', ['getAmcQuestions.py', year, version, level])
     var html = "";
     totalCounter = 0;
               
@@ -26,29 +26,44 @@ module.exports = {
       con.connect(function(err) {
         if (err) throw err;
 
-        var sql = "SELECT * FROM amc WHERE year = "+year+" AND version = \""+version+"\""
+        var sql = "SELECT * FROM amc WHERE year = "+year+" AND level = \"12\" AND version = \""+version+"\""
         con.query(sql, function (err, result) {
           if (err) throw err;
           
           for (var i = 0; i< problems.length; i++) {
             // console.log(i+1, year, version, problems[i][1])
-            if (!result.length) {
+            if (level.equals("12")) {
+              if (!result.length) {
               var sql = "INSERT INTO amc (year, version, number, problem, problemHTML) VALUES ("+year+", \""+version+"\", \""+(i+1)
                       +"\", \""+String(problems[i][1]).replaceAll("\"", "\'")+"\", \""+String(problems[i][0]).replaceAll("\"", "\'")+"\")"
-            } else {
-              console.log(String(problems[i][1]).replaceAll("\"", "\'"))
-              var sql = "UPDATE amc SET problem = \""+String(problems[i][1]).replaceAll("\"", "\'")+"\", problemHTML = \""+
-                      String(problems[i][0]).replaceAll("\"", "\'")+"\" WHERE year = "+year+" AND number = \""+(i+1)+"\""+" AND version = \""+version+"\"";
-            }
-
-            con.query(sql, function (err, result) {
-              if (err) throw err;
-              totalCounter+=1;
-              console.log("record inserted: "+totalCounter);
-              if (totalCounter == 25 && callNext) {
-                callNextContest(year, version);
+              } else {
+                console.log(String(problems[i][1]).replaceAll("\"", "\'"))
+                var sql = "UPDATE amc SET problem = \""+String(problems[i][1]).replaceAll("\"", "\'")+"\", problemHTML = \""+
+                        String(problems[i][0]).replaceAll("\"", "\'")+"\" WHERE year = "+year+" AND number = \""+(i+1)+"\""+" AND version = \""+version+"\"";
               }
-            });
+            } else {
+              var problemRepeated = false;
+              for (p in result) {
+                if (problems[i][1].equals(p.problem)) {
+                  problemRepeated = true;
+                  break;
+                }
+              }
+              if (problemRepeated) {
+                console.log(`Problem ${i+1} is a repeat`)
+              }
+              
+            }
+            
+
+            // con.query(sql, function (err, result) {
+            //   if (err) throw err;
+            //   totalCounter+=1;
+            //   console.log("record inserted: "+totalCounter);
+            //   if (totalCounter == 25 && callNext) {
+            //     callNextContest(year, version);
+            //   }
+            // });
             // con.end();
           }
           
@@ -61,12 +76,13 @@ module.exports = {
 
   addAllAMCs: function() {
     // this.addToDatabase(2018, "A", true);
-    this.addToDatabase(2019, "A", true)
+    this.addToDatabase(2019, "B", false)
+    // this.addToDatabase(2004, "B", false)
   },
 
   addAllAMCSolutions: function() {
     console.log("I'm here")
-    this.addSolutionsToDatabase(2019, "A", true)
+    this.addSolutionsToDatabase(2019, "A", "10", true)
   },
 
   addSolutionsToDatabase: function(year, version, callNext = false) {

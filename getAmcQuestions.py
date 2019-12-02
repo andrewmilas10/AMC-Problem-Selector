@@ -1,5 +1,7 @@
 import requests
 import sys, json
+import string
+printable = set(string.printable)
 from bs4 import BeautifulSoup
 
 def find_nth(haystack, needle, n):
@@ -20,7 +22,7 @@ def replaceImgsWithLatex(question):
   return(question.replace("<p>", "").replace("</p>", ""))
 
 def main():
-  html_doc = requests.get("https://artofproblemsolving.com/wiki/index.php/"+sys.argv[1]+"_AMC_12"+sys.argv[2]+"_Problems")
+  html_doc = requests.get("https://artofproblemsolving.com/wiki/index.php/"+sys.argv[1]+"_AMC_"+sys.argv[3]+sys.argv[2]+"_Problems")
   soup = BeautifulSoup(html_doc.text, 'html.parser')
   elements = soup.find_all("h2")
   questions = []
@@ -34,7 +36,11 @@ def main():
         elCopy = elCopy.find_next_sibling()
       questions.append([html, cleanedQuestion])
 
-  print(questions)
+  allQuestionsClean = []
+  for question in questions:
+      allQuestionsClean.append([''.join(filter(lambda x: x in printable, question[0])), ''.join(filter(lambda x: x in printable, question[1]))])
+
+  print(allQuestionsClean)
 
   # print ("\n NEXT SIBLING: \n", replaceImgsWithLatex(str(elements[0].find_next_sibling())))
   # print ("\n NEXT SIBLING: \n", replaceImgsWithLatex(str(elements[1].find_next_sibling())))
