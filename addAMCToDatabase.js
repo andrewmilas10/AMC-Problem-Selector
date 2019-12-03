@@ -32,7 +32,8 @@ module.exports = {
           
           for (var i = 0; i< problems.length; i++) {
             // console.log(i+1, year, version, problems[i][1])
-            if (level.equals("12")) {
+            console.log(level)
+            if (level === "12") {
               if (!result.length) {
               var sql = "INSERT INTO amc (year, version, number, problem, problemHTML) VALUES ("+year+", \""+version+"\", \""+(i+1)
                       +"\", \""+String(problems[i][1]).replaceAll("\"", "\'")+"\", \""+String(problems[i][0]).replaceAll("\"", "\'")+"\")"
@@ -44,7 +45,8 @@ module.exports = {
             } else {
               var problemRepeated = false;
               for (p in result) {
-                if (problems[i][1].equals(p.problem)) {
+                confirm.log(p.problem)
+                if (problems[i][1] === p.problem) {
                   problemRepeated = true;
                   break;
                 }
@@ -52,7 +54,6 @@ module.exports = {
               if (problemRepeated) {
                 console.log(`Problem ${i+1} is a repeat`)
               }
-              
             }
             
 
@@ -74,10 +75,77 @@ module.exports = {
     py.stdin.end();
   },
 
+  addRepeatsToDatabase: function(year, version, callNext = false) {
+    var py = spawn('python', ['getAmcRepeats.py', year, version])
+    var repeatedList = "";
+    totalCounter = 0;
+              
+    py.stdout.on('data', function(data){
+      repeatedList += data;
+    });
+
+    py.stdout.on('end', function(){
+      var repeats = eval(repeatedList)
+      // console.log(solutions)
+      
+      var con = mysql.createConnection({
+        host: "localhost",
+        user: "root",
+        password: "Dtumimi1!",
+        database: "mydb"
+      });
+
+      con.connect(function(err) {
+        if (err) throw err;
+
+        var sql = "SELECT * FROM amc WHERE year = "+year+" AND level = \"10\" AND version = \""+version+"\""
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+          
+          for (var i = 0; i< repeats.length; i++) {
+
+            if (repeats[i]) {
+              //TODO Need to update getAMCRepeats to actually get the AMC12 Problem
+              //TODO
+              //TODO
+              var sql = "UPDATE amc SET level = \"Both\", numberAMC10 = \""+(i+1)+"\" WHERE year = "+year+" AND number = \""+(i+1)+"\""+" AND version = \""+version+"\"";
+            }
+
+            if (!result.length) {
+              var sql = "INSERT INTO amc (year, version, number, solutions) VALUES ("+year+", \""+version+"\", \""+(i+1)
+                      +"\", \""+solutionsStr+"\")"
+            } else {
+              // console.log(String(solutions[i]).replaceAll("\"", "\'"))
+              var sql = "UPDATE amc SET solutions = \""+solutionsStr+
+                        "\" WHERE year = "+year+" AND number = \""+(i+1)+"\""+" AND version = \""+version+"\"";
+            }
+
+            con.query(sql, function (err, result) {
+              if (err) throw err;
+              totalCounter+=1;
+              console.log("record inserted: "+totalCounter);
+              if (totalCounter == 25 && callNext) {
+                callNextContest(year, version);
+              }
+            });
+            // con.end();
+          }
+          
+        });
+
+    }); 
+    });
+    py.stdin.end();
+  },
+
   addAllAMCs: function() {
     // this.addToDatabase(2018, "A", true);
-    this.addToDatabase(2019, "B", false)
+    this.addToDatabase(2019, "B", "10", false)
     // this.addToDatabase(2004, "B", false)
+  },
+
+  addAllAMCReapeats: function() {
+
   },
 
   addAllAMCSolutions: function() {
