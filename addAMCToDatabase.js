@@ -35,12 +35,13 @@ module.exports = {
             console.log(level)
             if (level === "12") {
               if (!result.length) {
-              var sql = "INSERT INTO amc (year, version, number, problem, problemHTML) VALUES ("+year+", \""+version+"\", \""+(i+1)
+                //TODO CHANGE HERE to ` format
+              var sql = "INSERT INTO amc (year, version, number, problem, problemHTML, level) VALUES ("+year+", \""+version+"\", \""+(i+1)
                       +"\", \""+String(problems[i][1]).replaceAll("\"", "\'")+"\", \""+String(problems[i][0]).replaceAll("\"", "\'")+"\")"
               } else {
                 console.log(String(problems[i][1]).replaceAll("\"", "\'"))
-                var sql = "UPDATE amc SET problem = \""+String(problems[i][1]).replaceAll("\"", "\'")+"\", problemHTML = \""+
-                        String(problems[i][0]).replaceAll("\"", "\'")+"\" WHERE year = "+year+" AND number = \""+(i+1)+"\""+" AND version = \""+version+"\"";
+                var sql = `UPDATE amc SET problem = \"${String(problems[i][1]).replaceAll("\"", "\'")}\", problemHTML = \"${String(problems[i][0]).replaceAll("\"", "\'")}
+                           \" WHERE year = ${year} AND number = \"${i+1}\" AND version = \"${version}\" AND (level = \"12\" OR level = \"both\")`;
               }
             } else {
               var problemRepeated = false;
@@ -104,23 +105,21 @@ module.exports = {
           
           for (var i = 0; i< repeats.length; i++) {
 
-            if (repeats[i]) {
+            if (repeats[i][0]) {
               //TODO Need to update getAMCRepeats to actually get the AMC12 Problem
-              //TODO
-              //TODO
-              var sql = "UPDATE amc SET level = \"Both\", numberAMC10 = \""+(i+1)+"\" WHERE year = "+year+" AND number = \""+(i+1)+"\""+" AND version = \""+version+"\"";
-            }
-
-            if (!result.length) {
-              var sql = "INSERT INTO amc (year, version, number, solutions) VALUES ("+year+", \""+version+"\", \""+(i+1)
-                      +"\", \""+solutionsStr+"\")"
+              var sql = `UPDATE amc SET level = \"Both\", numberAMC10 = \"${i+1}\" WHERE year = ${year} AND number = \"${repeats[i][1]}\" AND version = \"${version}\" AND level = \"12\"`;
+            } else if (!result.length) {
+                var sql = `INSERT INTO amc (year, version, level, numberAMC10) VALUES (${year}, \"${version}\", \"10\", \"${i+1}\")`
             } else {
-              // console.log(String(solutions[i]).replaceAll("\"", "\'"))
-              var sql = "UPDATE amc SET solutions = \""+solutionsStr+
-                        "\" WHERE year = "+year+" AND number = \""+(i+1)+"\""+" AND version = \""+version+"\"";
+              totalCounter+=1;
+              console.log("record already inserted: "+totalCounter);
+              if (totalCounter == 25 && callNext) {
+                callNextContest(year, version);
+              }
             }
 
-            con.query(sql, function (err, result) {
+            if (repeats[i][0] || !result.length) {
+              con.query(sql, function (err, result) {
               if (err) throw err;
               totalCounter+=1;
               console.log("record inserted: "+totalCounter);
@@ -128,6 +127,8 @@ module.exports = {
                 callNextContest(year, version);
               }
             });
+            }
+            
             // con.end();
           }
           
@@ -145,7 +146,10 @@ module.exports = {
   },
 
   addAllAMCReapeats: function() {
-
+    this.addRepeatsToDatabase(2019, "A", true)
+    //TODO
+    //TODO Repeats still dont work for 2010 for example aghhh
+    //TODO
   },
 
   addAllAMCSolutions: function() {
@@ -243,10 +247,10 @@ function callNextContest(year, version) {
   console.log(year, version)
   if (version == "B") {
     if (year >= 2003) {
-      module.exports.addSolutionsToDatabase(year-1, "A", true)
+      module.exports.addRepeatsToDatabase(year-1, "A", true)
     }
   } else {
-    module.exports.addSolutionsToDatabase(year, "B", true)
+    module.exports.addRepeatsToDatabase(year, "B", true)
   }
 }
 
