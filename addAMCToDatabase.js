@@ -26,18 +26,16 @@ module.exports = {
       con.connect(function(err) {
         if (err) throw err;
 
-        var sql = "SELECT * FROM amc WHERE year = "+year+" AND level = \"12\" AND version = \""+version+"\""
+        var sql = "SELECT * FROM amc WHERE year = "+year+" AND (level = \"12\" or level =\"Both\") AND version = \""+version+"\""
         con.query(sql, function (err, result) {
           if (err) throw err;
           
           for (var i = 0; i< problems.length; i++) {
             // console.log(i+1, year, version, problems[i][1])
-            console.log(level)
             if (level === "12") {
               if (!result.length) {
-                //TODO CHANGE HERE to ` format
-              var sql = "INSERT INTO amc (year, version, number, problem, problemHTML, level) VALUES ("+year+", \""+version+"\", \""+(i+1)
-                      +"\", \""+String(problems[i][1]).replaceAll("\"", "\'")+"\", \""+String(problems[i][0]).replaceAll("\"", "\'")+"\")"
+              var sql = `INSERT INTO amc (year, version, number, problem, problemHTML, level) VALUES (${year}, \"${version}\", \"${i+1}\", 
+                        \"${String(problems[i][1]).replaceAll("\"", "\'")}\", \"${String(problems[i][0]).replaceAll("\"", "\'")}\", \"12\")`
               } else {
                 console.log(String(problems[i][1]).replaceAll("\"", "\'"))
                 var sql = `UPDATE amc SET problem = \"${String(problems[i][1]).replaceAll("\"", "\'")}\", problemHTML = \"${String(problems[i][0]).replaceAll("\"", "\'")}
@@ -45,27 +43,34 @@ module.exports = {
               }
             } else {
               var problemRepeated = false;
-              for (p in result) {
-                confirm.log(p.problem)
-                if (problems[i][1] === p.problem) {
+              for (var j = 0; j < result.length; j++) {
+                if (i+1 === parseInt(result[j].numberAMC10)) {
                   problemRepeated = true;
                   break;
                 }
               }
               if (problemRepeated) {
-                console.log(`Problem ${i+1} is a repeat`)
+                totalCounter+=1;
+                console.log("record inserted: "+totalCounter);
+                if (totalCounter == 25 && callNext) {
+                  callNextContest(year, version);
+                }
+                continue;
+              } else {
+                var sql = `UPDATE amc SET problem = \"${String(problems[i][1]).replaceAll("\"", "\'")}\", problemHTML = \"${String(problems[i][0]).replaceAll("\"", "\'")}
+                           \" WHERE year = ${year} AND numberAMC10 = \"${i+1}\" AND version = \"${version}\" AND level = \"10\"`;
               }
             }
             
 
-            // con.query(sql, function (err, result) {
-            //   if (err) throw err;
-            //   totalCounter+=1;
-            //   console.log("record inserted: "+totalCounter);
-            //   if (totalCounter == 25 && callNext) {
-            //     callNextContest(year, version);
-            //   }
-            // });
+            con.query(sql, function (err, result) {
+              if (err) throw err;
+              totalCounter+=1;
+              console.log("record inserted: "+totalCounter);
+              if (totalCounter == 25 && callNext) {
+                callNextContest(year, version);
+              }
+            });
             // con.end();
           }
           
@@ -87,7 +92,6 @@ module.exports = {
 
     py.stdout.on('end', function(){
       var repeats = eval(repeatedList)
-      // console.log(solutions)
       
       var con = mysql.createConnection({
         host: "localhost",
@@ -106,7 +110,6 @@ module.exports = {
           for (var i = 0; i< repeats.length; i++) {
 
             if (repeats[i][0]) {
-              //TODO Need to update getAMCRepeats to actually get the AMC12 Problem
               var sql = `UPDATE amc SET level = \"Both\", numberAMC10 = \"${i+1}\" WHERE year = ${year} AND number = \"${repeats[i][1]}\" AND version = \"${version}\" AND level = \"12\"`;
             } else if (!result.length) {
                 var sql = `INSERT INTO amc (year, version, level, numberAMC10) VALUES (${year}, \"${version}\", \"10\", \"${i+1}\")`
@@ -141,19 +144,19 @@ module.exports = {
 
   addAllAMCs: function() {
     // this.addToDatabase(2018, "A", true);
-    this.addToDatabase(2019, "B", "10", false)
+    //TODO
+    //TODO 2006 A adding solutions didn't work problem 17 got set to what problem 18 is
+    //TODO
+    this.addToDatabase(2009, "B", "10", true)
     // this.addToDatabase(2004, "B", false)
   },
 
   addAllAMCReapeats: function() {
-    this.addRepeatsToDatabase(2019, "A", true)
-    //TODO
-    //TODO Repeats still dont work for 2010 for example aghhh
-    //TODO
+    this.addRepeatsToDatabase(2005, "B", true)
+
   },
 
   addAllAMCSolutions: function() {
-    console.log("I'm here")
     this.addSolutionsToDatabase(2019, "A", "10", true)
   },
 
@@ -168,7 +171,6 @@ module.exports = {
 
     py.stdout.on('end', function(){
       var solutions = eval(html)
-      // console.log(solutions)
       
       var con = mysql.createConnection({
         host: "localhost",
@@ -185,8 +187,6 @@ module.exports = {
           if (err) throw err;
           
           for (var i = 0; i< solutions.length; i++) {
-            // console.log(i+1, year, version, solutions[i].length)
-            // solutionsStr = JSON.stringify(solutions[i]).replaceAll("\"", "\'");
             solutionsStr = ""
             for (var j = 0; j< solutions[i].length; j++) {
               solutionsStr+="(@)"+solutions[i][j]
@@ -247,10 +247,10 @@ function callNextContest(year, version) {
   console.log(year, version)
   if (version == "B") {
     if (year >= 2003) {
-      module.exports.addRepeatsToDatabase(year-1, "A", true)
+      module.exports.addToDatabase(year-1, "A", "10", true)
     }
   } else {
-    module.exports.addRepeatsToDatabase(year, "B", true)
+    module.exports.addToDatabase(year, "B", "10", true)
   }
 }
 

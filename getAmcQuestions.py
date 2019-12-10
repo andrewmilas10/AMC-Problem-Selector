@@ -12,6 +12,8 @@ def find_nth(haystack, needle, n):
     return start
 
 def replaceImgsWithLatex(question):
+  if "<br/>" in question:
+    question = question.replace("<br/>", "<br>")
   while "<img" in question:
     rightIndex = question.find("/>") if (question.find("/>")>0 and (question.find("/>") < question.find("/img>") or question.find("/img>") == -1)) else question.find("/img>")
     img = question[question.index("<img"):rightIndex+2]
