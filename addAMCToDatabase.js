@@ -147,7 +147,7 @@ module.exports = {
     //TODO
     //TODO 2006 A adding solutions didn't work problem 17 got set to what problem 18 is
     //TODO
-    this.addToDatabase(2009, "B", "10", true)
+    this.addToDatabase(2006, "A", "10", true)
     // this.addToDatabase(2004, "B", false)
   },
 
@@ -160,8 +160,8 @@ module.exports = {
     this.addSolutionsToDatabase(2019, "A", "10", true)
   },
 
-  addSolutionsToDatabase: function(year, version, callNext = false) {
-    var py = spawn('python', ['getAmcSolutions.py', year, version])
+  addSolutionsToDatabase: function(year, version, level, callNext = false) {
+    var py = spawn('python', ['getAmcSolutions.py', year, version, level])
     var html = "";
     totalCounter = 0;
               
@@ -182,7 +182,7 @@ module.exports = {
       con.connect(function(err) {
         if (err) throw err;
 
-        var sql = "SELECT * FROM amc WHERE year = "+year+" AND version = \""+version+"\""
+        var sql = "SELECT * FROM amc WHERE year = "+year+" AND (level = \"12\" or level =\"Both\") AND version = \""+version+"\""
         con.query(sql, function (err, result) {
           if (err) throw err;
           
@@ -193,13 +193,34 @@ module.exports = {
             }
             solutionsStr = solutionsStr.replace("(@)", "").replaceAll("\"", "\'")
             console.log("\n\n\n\nSolution "+i+":  "+solutionsStr) //Replace the double quotes with singles
-            if (!result.length) {
-              var sql = "INSERT INTO amc (year, version, number, solutions) VALUES ("+year+", \""+version+"\", \""+(i+1)
-                      +"\", \""+solutionsStr+"\")"
+            if (level === "12") {
+              if (!result.length) {
+                var sql = "INSERT INTO amc (year, version, number, solutions) VALUES ("+year+", \""+version+"\", \""+(i+1)
+                        +"\", \""+solutionsStr+"\")"
+              } else {
+                // console.log(String(solutions[i]).replaceAll("\"", "\'"))
+                var sql = "UPDATE amc SET solutions = \""+solutionsStr+
+                          "\" WHERE year = "+year+" AND number = \""+(i+1)+"\""+" AND version = \""+version+"\"";
+              }
             } else {
-              // console.log(String(solutions[i]).replaceAll("\"", "\'"))
-              var sql = "UPDATE amc SET solutions = \""+solutionsStr+
-                        "\" WHERE year = "+year+" AND number = \""+(i+1)+"\""+" AND version = \""+version+"\"";
+              var problemRepeated = false;
+              for (var j = 0; j < result.length; j++) {
+                if (i+1 === parseInt(result[j].numberAMC10)) {
+                  problemRepeated = true;
+                  break;
+                }
+              }
+              if (problemRepeated) {
+                totalCounter+=1;
+                console.log("record inserted: "+totalCounter);
+                if (totalCounter == 25 && callNext) {
+                  callNextContest(year, version);
+                }
+                continue;
+              } else {
+                var sql = `UPDATE amc SET solutions = \"${solutionsStr}\" 
+                          WHERE year = ${year} AND numberAMC10 = \"${i+1}\" AND version = \"${version}\" AND level = \"10\"`;
+              }
             }
 
             con.query(sql, function (err, result) {
@@ -247,10 +268,10 @@ function callNextContest(year, version) {
   console.log(year, version)
   if (version == "B") {
     if (year >= 2003) {
-      module.exports.addToDatabase(year-1, "A", "10", true)
+      module.exports.addSolutionsToDatabase(year-1, "A", "10", true)
     }
   } else {
-    module.exports.addToDatabase(year, "B", "10", true)
+    module.exports.addSolutionsToDatabase(year, "B", "10", true)
   }
 }
 

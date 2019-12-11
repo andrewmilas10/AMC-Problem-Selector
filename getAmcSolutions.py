@@ -25,7 +25,7 @@ def main():
   allSolutions = []
 
   for i in range(1, 26):
-    html_doc = requests.get("https://artofproblemsolving.com/wiki/index.php/"+sys.argv[1]+"_AMC_12"+sys.argv[2]+"_Problems/Problem_"+str(i))
+    html_doc = requests.get("https://artofproblemsolving.com/wiki/index.php/"+sys.argv[1]+"_AMC_"+sys.argv[3]+sys.argv[2]+"_Problems/Problem_"+str(i))
     soup = BeautifulSoup(html_doc.text, 'html.parser')
     elements = soup.select('span[id^=Solution]')
 

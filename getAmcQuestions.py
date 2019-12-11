@@ -21,7 +21,7 @@ def replaceImgsWithLatex(question):
     # print("indices: ", question.index("\""), find_nth(img, "\"", 2))
     # print("alt: ",alt)
     question = question.replace(img, alt)
-  return(question.replace("<p>", "").replace("</p>", ""))
+  return(question.replace("<p>", "").replace("</p>", "").replace("<center>", "").replace("</center>", ""))
 
 def main():
   html_doc = requests.get("https://artofproblemsolving.com/wiki/index.php/"+sys.argv[1]+"_AMC_"+sys.argv[3]+sys.argv[2]+"_Problems")
@@ -29,7 +29,7 @@ def main():
   elements = soup.find_all("h2")
   questions = []
   for el in elements:
-    if (el.find_next_sibling() != None and el.find_next_sibling().name == "p"):
+    if (el.find_next_sibling() != None and (el.find_next_sibling().name == "p" or el.find_next_sibling().name == "center")):
       elCopy = el.find_next_sibling()
       html = ""
       cleanedQuestion = replaceImgsWithLatex(str(el.find_next_sibling()))
