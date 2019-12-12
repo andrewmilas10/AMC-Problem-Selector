@@ -25,6 +25,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             $('#yearSelect').val(urlParams.get('year').toString())
             $('#versionSelect').val(urlParams.get('version').toString())
+            $('#levelSelect').val(urlParams.get('level').toString())
             $('#keyWordInput').val(urlParams.get('keyWords').toString())
             $('#orderSelect').val(urlParams.get('order').toString())
             document.getElementById("myForm").submit();
@@ -41,7 +42,7 @@
     <header id="headingContainer" class="problem">
         <h1 class="title">AMC Problem Selector</h1>
         <hr>
-        <p>Select the year, version, and any key words that you want</p>
+        <p>Select the year, version, level, and any key words that you want</p>
 
         
         <span class="inlineSpan">Year: </span>
@@ -75,7 +76,7 @@
         </select>
         <br><br>
         <span class="inlineSpan">AMC 10 or 12: </span>
-        <select id="versionSelect" name="version">
+        <select id="levelSelect" name="level">
             <option value="All">All</option>
             <option value="10">10</option>
             <option value="12">12</option>

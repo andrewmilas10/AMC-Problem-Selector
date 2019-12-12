@@ -16,7 +16,7 @@ String.prototype.replaceAt=function(index, replacement) {
   return this.substr(0, index) + replacement+ this.substr(index + replacement.length);
 }
 
-amcDb.addAllAMCSolutions();
+// amcDb.addAllAMCSolutions();
 
 http.createServer((req, res) => {
   var q = url.parse(req.url, true);
@@ -26,6 +26,7 @@ http.createServer((req, res) => {
       var $ = cheerio.load(content);
       $('#yearSelect').val(q.query.year)
       $('#versionSelect').val(q.query.version)
+      $('#levelSelect').val(q.query.level)
       $('#keyWordInput').val(q.query.keyWords)
       $('#orderSelect').val(q.query.order)
       $('#pageSelect').val(q.query.page)
@@ -41,23 +42,30 @@ http.createServer((req, res) => {
         if (err) throw err;
         console.log("Connected!");
         var year = (q.query.year == "All" ? "": "year = "+q.query.year+" AND");
+        var level = (q.query.level == "All" ? " (level = \"10\" OR level = \"12\" OR level = \"Both\") AND": " (level = \""+q.query.level+"\" OR level = \"Both\") AND");
         var version = (q.query.version == "All" ? " (version = \"A\" OR version = \"B\")": " version = \""+q.query.version+"\"");
+        //TODO
+        //TODO Need to add level in the search query
         var order = (q.query.order == "Year" ? "ORDER BY year DESC": " ORDER BY number, year desc");
-        var sql = `SELECT * FROM amc WHERE ${year}${version}${order}`
+        var sql = `SELECT * FROM amc WHERE ${year}${level}${version}${order}`
         con.query(sql, function (err, result) {
           if (err) throw err;
           var j = 0;
           for (var i = 0; i < result.length; i++) {
-            // console.log(`Problem ${j} (AMC ${result[i].year}${result[i].version}, Problem ${result[i].number})`+((result[i].problemHTML != null) && (q.query.keyWords.toLowerCase() == "all" || result[i].problemHTML.toLowerCase().includes(q.query.keyWords.toLowerCase()) || result[i].solutions.toLowerCase().includes(q.query.keyWords.toLowerCase()))))
             if ((result[i].problemHTML != null) && (q.query.keyWords.toLowerCase() == "all" || result[i].problemHTML.toLowerCase().includes(q.query.keyWords.toLowerCase()) || result[i].solutions.toLowerCase().includes(q.query.keyWords.toLowerCase()))) {
               j++;
               if (Math.floor((j-1)/100)+1 == parseInt(q.query.page)) {
                 $("#problemContainer").append(`<div id = 'problem${j}' class = "problem"></div>`)
-                $(`#problem${j}`).append(`<h1>Problem ${j} (AMC ${result[i].year}${result[i].version}, Problem ${result[i].number}): </h1>`)
+                if (result[i].level != "Both") {
+                  $(`#problem${j}`).append(`<h1>Problem ${j} (${result[i].year} AMC${result[i].level}${result[i].version} Problem ${result[i].number || result[i].numberAMC10}): </h1>`)
+                  var url = `https://artofproblemsolving.com/wiki/index.php/${result[i].year}_AMC_${result[i].level}${result[i].version}_Problems/Problem_${result[i].number || result[i].numberAMC10}`
+                } else {
+                  $(`#problem${j}`).append(`<h1>Problem ${j} (${result[i].year} AMC10${result[i].version} Problem ${result[i].numberAMC10} and AMC12${result[i].version} Problem ${result[i].number}): </h1>`)
+                  var url = `https://artofproblemsolving.com/wiki/index.php/${result[i].year}_AMC_10${result[i].version}_Problems/Problem_${result[i].numberAMC10}`
+                }
+                // $(`#problem${j}`).append(`<h1>Problem ${j} (${result[i].year} AMC${level}${result[i].version} Problem ${result[i].number}): </h1>`)
                 $(`#problem${j}`).append(result[i].problemHTML)
-                var url = `https://artofproblemsolving.com/wiki/index.php/${result[i].year}_AMC_12${result[i].version}_Problems/Problem_${result[i].number}`
                 $(`#problem${j}`).append(`<p>Source: <a href="${url}" target="_blank">${url}</a></p>`)
-                // $("#problemContainer").append(`<button type="button" onclick="if (document.getElementById('toggle${j}').style.display === 'block') {document.getElementById('toggle${j}').style.display = 'none'} else {document.getElementById('toggle${j}').style.display = 'block'}" >Click To Show Solutions</button>`)
                 $(`#problem${j}`).append(`<button class = "btn" type="button" id='btn${j}' onclick="toggleSolutions(document.getElementById('toggle${j}'), this, document.getElementById('problem${j}'), false)" >Show Solutions</button>`)
                 var solutionsStr = `<section id = "toggle${j}" style = "display: none">`
                 solutionsStr += `<hr><h2>Problem ${j} Solution: </h2>`
