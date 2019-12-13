@@ -45,8 +45,11 @@ http.createServer((req, res) => {
         var level = (q.query.level == "All" ? " (level = \"10\" OR level = \"12\" OR level = \"Both\") AND": " (level = \""+q.query.level+"\" OR level = \"Both\") AND");
         var version = (q.query.version == "All" ? " (version = \"A\" OR version = \"B\")": " version = \""+q.query.version+"\"");
         //TODO
-        //TODO Need to add level in the search query
-        var order = (q.query.order == "Year" ? "ORDER BY year DESC": " ORDER BY number, year desc");
+        //TODO Need to add level in the search query For Ranking
+        var order = (q.query.order == "Year" ? "ORDER BY year DESC, version": " ORDER BY orderNumber, year desc, version, level");
+        if (q.query.level == "10") {
+          order = (q.query.order == "Year" ? "ORDER BY year DESC, version": " ORDER BY numberAMC10, year desc, version, level");
+        }
         var sql = `SELECT * FROM amc WHERE ${year}${level}${version}${order}`
         con.query(sql, function (err, result) {
           if (err) throw err;
