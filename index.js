@@ -6,6 +6,8 @@ var cheerio = require("cheerio");
 var spawn = require('child_process').spawn
 var amcDb = require('./addAMCToDatabase');
 var mysql = require("mysql");
+//TODO for some reason 2017 amc10b question 3, 4 don't work
+
 
 String.prototype.replaceAll = function(search, replacement) {
   var target = this;
@@ -102,6 +104,8 @@ http.createServer((req, res) => {
           } else {
             $('#pagesContainer').css("display", "none");
           }
+          $('#numProblemsContainer').css("display", "block");
+          $('#numProblemsText').html(`There are ${j} problems`)
           res.end($.html())
         })
       })
