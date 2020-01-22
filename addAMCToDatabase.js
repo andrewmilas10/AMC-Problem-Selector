@@ -1,9 +1,34 @@
 
-var spawn = require('child_process').spawn
+var spawn = require('child_process').spawn;
 var mysql = require("mysql");
 
 module.exports = {
-  addToDatabase: function(year, version, level, callNext = false) {
+  addContestVersionToDatabase: function(year, version, step = 0) {
+    switch (step) {
+      case 0:
+        this.addToDatabase(year, version, "12", true, step);
+        break;
+      case 1:
+        this.addRepeatsToDatabase(year, version, true, step);
+        break;
+      case 2:
+        this.addToDatabase(year, version, "10", true, step);
+        break;
+      case 3:
+        this.addSolutionsToDatabase(year, version, "10", true, step);
+        break;
+      case 4:
+        this.addSolutionsToDatabase(year, version, "12");
+    }
+
+    
+    
+    
+    
+    
+  },
+
+  addToDatabase: function(year, version, level, callNext = false, step=-1) {
     var py = spawn('python', ['getAmcQuestions.py', year, version, level])
     var html = "";
     totalCounter = 0;
@@ -53,7 +78,11 @@ module.exports = {
                 totalCounter+=1;
                 console.log("record inserted: "+totalCounter);
                 if (totalCounter == 25 && callNext) {
-                  callNextContest(year, version);
+                  if (step==-1) {
+                    callNextContest(year, version);
+                  } else {
+                    callNextContest(year, version, step+1);
+                  }
                 }
                 continue;
               } else {
@@ -68,7 +97,11 @@ module.exports = {
               totalCounter+=1;
               console.log("record inserted: "+totalCounter);
               if (totalCounter == 25 && callNext) {
-                callNextContest(year, version);
+                if (step==-1) {
+                  callNextContest(year, version);
+                } else {
+                  callNextContest(year, version, step+1);
+                }
               }
             });
             // con.end();
@@ -81,7 +114,7 @@ module.exports = {
     py.stdin.end();
   },
 
-  addRepeatsToDatabase: function(year, version, callNext = false) {
+  addRepeatsToDatabase: function(year, version, callNext = false, step=-1) {
     var py = spawn('python', ['getAmcRepeats.py', year, version])
     var repeatedList = "";
     totalCounter = 0;
@@ -92,7 +125,7 @@ module.exports = {
 
     py.stdout.on('end', function(){
       var repeats = eval(repeatedList)
-      
+      console.log(repeats);
       var con = mysql.createConnection({
         host: "localhost",
         user: "root",
@@ -117,7 +150,11 @@ module.exports = {
               totalCounter+=1;
               console.log("record already inserted: "+totalCounter);
               if (totalCounter == 25 && callNext) {
-                callNextContest(year, version);
+                if (step==-1) {
+                  callNextContest(year, version);
+                } else {
+                  callNextContest(year, version, step+1);
+                }
               }
             }
 
@@ -127,7 +164,11 @@ module.exports = {
               totalCounter+=1;
               console.log("record inserted: "+totalCounter);
               if (totalCounter == 25 && callNext) {
-                callNextContest(year, version);
+                if (step==-1) {
+                  callNextContest(year, version);
+                } else {
+                  callNextContest(year, version, step+1);
+                }
               }
             });
             }
@@ -160,7 +201,7 @@ module.exports = {
     this.addSolutionsToDatabase(2019, "A", "10", true)
   },
 
-  addSolutionsToDatabase: function(year, version, level, callNext = false) {
+  addSolutionsToDatabase: function(year, version, level, callNext = false, step=-1) {
     var py = spawn('python', ['getAmcSolutions.py', year, version, level])
     var html = "";
     totalCounter = 0;
@@ -214,7 +255,11 @@ module.exports = {
                 totalCounter+=1;
                 console.log("record inserted: "+totalCounter);
                 if (totalCounter == 25 && callNext) {
-                  callNextContest(year, version);
+                  if (step==-1) {
+                    callNextContest(year, version);
+                  } else {
+                    callNextContest(year, version, step+1);
+                  }
                 }
                 continue;
               } else {
@@ -228,7 +273,11 @@ module.exports = {
               totalCounter+=1;
               console.log("record inserted: "+totalCounter);
               if (totalCounter == 25 && callNext) {
-                callNextContest(year, version);
+                if (step==-1) {
+                  callNextContest(year, version);
+                } else {
+                  callNextContest(year, version, step+1);
+                }
               }
             });
             // con.end();
@@ -264,14 +313,19 @@ module.exports = {
 
 }
 
-function callNextContest(year, version) {
+function callNextContest(year, version, step=-1) {
   console.log(year, version)
-  if (version == "B") {
-    if (year >= 2003) {
-      module.exports.addSolutionsToDatabase(year-1, "A", "10", true)
-    }
+  if (step>=0) {
+    module.exports.addContestVersionToDatabase(year, version, step)
   } else {
-    module.exports.addSolutionsToDatabase(year, "B", "10", true)
+    if (version == "B") {
+      if (year >= 2003) {
+        module.exports.addSolutionsToDatabase(year-1, "A", "10", true)
+      }
+    } else {
+      module.exports.addSolutionsToDatabase(year, "B", "10", true)
+    }
   }
+  
 }
 
